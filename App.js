@@ -2,11 +2,9 @@ import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import {useState} from 'react';
-import classData from './class-data';
-import {FlatList} from 'react-native';
-import {Ionicons} from '@expo/vector-icons';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, FlatList, Alert } from 'react-native';
+import { useEffect, useState } from 'react';
+import Icon from "react-native-vector-icons/MaterialIcons"; // Importing an icon set
 
 const InputBox = ({
   placeholder,
@@ -32,35 +30,37 @@ const InputBox = ({
   )
 }
 
+
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
   return(
-  <NavigationContainer>
-    <Stack.Navigator>
-      <Stack.Screen name="Màn hình Đăng nhập" component={loginScreen}/>
-      <Stack.Screen name="Danh sách Lớp" component={classListScreen}/>
-      <Stack.Screen name="Thông tin Chi tiết Lớp" component={classDetailScreen}/>
-    </Stack.Navigator>
-  </NavigationContainer>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Màn hình Đăng nhập" component={loginScreen}/>
+        <Stack.Screen name="Danh sách Nhân viên" component={employeeListScreen}/>
+        <Stack.Screen name="Thông tin Chi tiết Nhân viên" component={employeeDetails}/>
+        <Stack.Screen name="Thêm Nhân viên" component={addEmployee}/>
+      </Stack.Navigator>
+    </NavigationContainer>
+    
+  
   );
 }
 
-const Item = ({ id, subjectName,index, time, navigation }) => {
-
+const Item = ({ id, employee_name, navigation, profile_image, index }) => {
   return(
-    <TouchableOpacity onPress={() => navigation.navigate('Thông tin Chi tiết Lớp', { id: id })}>
+    <TouchableOpacity onPress={() => navigation.navigate('Thông tin Chi tiết Nhân viên', { id: id })}>
     <View style={styles.item}>
       <View style={styles.indexContainer}>
-        <Text style={styles.indexText}>{index}</Text>
+        <Text style={styles.indexText}>{index}
+        </Text>
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={styles.subject}>{subjectName}</Text>
-        <View style={styles.timeContainer}>
-          <Ionicons name="time-outline" size={16} color="#555" />
-          <Text style={styles.time}>{time}</Text>
-        </View>
+        <Text style={styles.subject}>{employee_name}</Text>
       </View>
     </View>
   </TouchableOpacity>
@@ -68,19 +68,53 @@ const Item = ({ id, subjectName,index, time, navigation }) => {
   );
 };
 
-
+// Login Screen
 function loginScreen({navigation}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(false);
-
+  const [isError, setIsError] = useState(false);
   const authUsername = 'admin';
   const authPassword = 'admin';
 
+  // fetch api
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchEmployee = async () => {
+      try {
+        const response = await fetch('http://blackntt.net:88/api/v1/employees');
+        if (!response.ok) {
+          throw new Error('Đã có lỗi');
+        }
+        const data = await response.json();
+          if (data.response == false){
+              setEmployees([]);
+              throw new Error(data.message);
+          } else {
+              setEmployees(data);
+          }
+        
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  useEffect(() => {
+      fetchEmployee();
+  }, []); // empty array means this effect will run only once
+
+
   const handleLogin = () => {
-    if(username === authUsername && password === authPassword){
-      setIsLogin(true);
-      navigation.navigate('Danh sách Lớp', {username: username});
+    for (let i = 0; i < employees.length; i++) {
+      if(username === employees[i].id && password === authPassword){
+        navigation.navigate('Danh sách Nhân viên', {username: username});
+        return;
+      }
+      else{
+        setIsError(true);
+      }
     }
   }
   return (
@@ -89,11 +123,11 @@ function loginScreen({navigation}) {
     <StatusBar style="auto" />
     <View style ={styles.centerGroup}>
       <Text style={styles.loginLabel}>Username</Text>
-      <InputBox loginState={isLogin} onChangeText={setUsername} value={username} placeholder="Placeholder"/>
+      <InputBox loginState={isError} onChangeText={setUsername} value={username} placeholder="Placeholder"/>
     </View>
     <View style ={styles.centerGroup}>
       <Text style={styles.loginLabel}>Password</Text>
-      <InputBox  loginState={isLogin} onChangeText={setPassword} value={password} secureTextEntry={true} placeholder="******* ****** **** *****"/>
+      <InputBox  loginState={isError} onChangeText={setPassword} value={password} secureTextEntry={true} placeholder="******* ****** **** *****"/>
     </View>
     <View style ={styles.centerGroup}>
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -103,40 +137,315 @@ function loginScreen({navigation}) {
   </SafeAreaView>
   );
 }
-function classListScreen({navigation}) {
+
+// Employee List Screen
+function employeeListScreen({navigation}) {
+  // fetch api
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchEmployee = async () => {
+      try {
+        const response = await fetch('http://blackntt.net:88/api/v1/employees');
+        if (!response.ok) {
+          throw new Error('Đã có lỗi');
+        }
+        const data = await response.json();
+          if (data.response == false){
+              setEmployees([]);
+              throw new Error(data.message);
+          } else {
+              setEmployees(data);
+          }
+        
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  useEffect(() => {
+      fetchEmployee();
+  }, []); // empty array means this effect will run only once
+  
   return (
     <SafeAreaView style={styles.detailContainer}>
-      <Text style={styles.title}>Danh sách các Lớp</Text>
+      <Text style={styles.title}>Danh sách các Nhân viên</Text>
       <StatusBar style="auto" />
+      <Text>
+        {loading ? 'Loading...' : ''}
+      </Text>
       <FlatList
-        data={classData}
+        data={employees}
         renderItem={({item, index}) => <Item id={item.id} index={index + 1}
-        subjectName={item.subjectName} time={item.time} navigation={navigation}/>}
+        employee_name={item.employee_name} navigation={navigation} />}
         keyExtractor={item => item.id}
       />
+      <View style={styles.centerBottomDockedGroup}>
+        <TouchableOpacity onPress={() => navigation.navigate('Thêm Nhân viên')}>
+          <Icon name="add" size={50} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={fetchEmployee}>
+          <Icon name="refresh" size={50} color="black"></Icon>
+        </TouchableOpacity>
+      </View>
+      
+      
+    </SafeAreaView>
+    
+  );
+}
+
+// Employee Details Screen
+function employeeDetails({route, navigation}) {
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [employeeName, setEmployeeName] = useState('');
+  const [employeeAge, setEmployeeAge] = useState('');
+  const [employeeSalary, setEmployeeSalary] = useState('');
+
+  const { id } = route.params;
+
+  useEffect(() => {
+    const fetchEmployee = async () => {
+      try {
+        const response = await fetch('http://blackntt.net:88/api/v1/employees');
+        if (!response.ok) {
+          throw new Error('Đã có lỗi');
+        }
+        const data = await response.json();
+        if (data.response === false) {
+          setEmployees([]);
+          throw new Error(data.message);
+        } else {
+          setEmployees(data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployee();
+  }, []); 
+
+  const chosenEmployee = employees.find(item => item.id === id);
+
+  useEffect(() => {
+    if (chosenEmployee) {
+      setEmployeeName(chosenEmployee.employee_name || '');
+      setEmployeeAge(chosenEmployee.employee_age?.toString() || '');
+      setEmployeeSalary(chosenEmployee.employee_salary?.toString() || '');
+    }
+  }, [chosenEmployee]); 
+
+  if (loading) {
+    return <Text style={styles.centerGroup}>Loading...</Text>;
+  }
+
+  if (!chosenEmployee) {
+    return <Text style={styles.centerGroup}>Không tìm thấy nhân viên.</Text>;
+  }
+
+  const updateEmployee = async (id, updatedData) => {
+    try {
+      const requestOptions = {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData)
+      };
+
+      const response = await fetch(`http://blackntt.net:88/api/v1/update/${id}`, requestOptions);
+
+      if (!response.ok) {
+        throw new Error('Đã có lỗi khi update nhân viên');
+      }
+
+      const data = await response.json();
+      return data;
+
+    } catch (error) {
+      console.error('Lỗi:', error);
+    }
+  };
+
+  const handleUpdate = async () => {
+    const updatedData = {
+      employee_name: employeeName,
+      employee_age: employeeAge,
+      employee_salary: employeeSalary
+    };
+    const result = await updateEmployee(id, updatedData);
+    if (result) {
+      Alert.alert("Thành công", "Cập nhật thông tin nhân viên thành công!");
+      navigation.navigate('Danh sách Nhân viên');
+    } else {
+      Alert.alert("Lỗi", "Cập nhật thất bại, vui lòng thử lại!");
+    }
+  };
+
+  const deleteEmployee = async (id) => {
+    try {
+      const requestOptions = {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      };
+
+      const response = await fetch(`http://blackntt.net:88/api/v1/delete/${id}`, requestOptions);
+
+      if (!response.ok) {
+        throw new Error('Đã có lỗi khi xóa nhân viên');
+      }
+
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {}; 
+      return data;
+    } catch (error) {
+      console.error('Lỗi:', error);
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!id) {
+      Alert.alert("Lỗi", "Không tìm thấy ID nhân viên!");
+      return;
+    }
+    const result = await deleteEmployee(id);
+    if (result) {
+      Alert.alert("Thành công", "Xóa nhân viên thành công!");
+      navigation.navigate('Danh sách Nhân viên');
+    } else {
+      Alert.alert("Lỗi", "Xóa thất bại, vui lòng thử lại");
+    }
+  }
+
+  return (
+    <SafeAreaView style={styles.detailContainer}>
+      <Text style={styles.title}>Chi tiết Nhân viên</Text>
+      <StatusBar style="auto" />
+      <View style={styles.centerGroup}>
+        <Image
+          source={{ uri: "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/00/00bddb041d6debb43f16b46332b77cab35b38da3_full.jpg" }}
+          style={{ width: 100, height: 100, borderRadius: 50, alignSelf: "center" }}
+        />
+        <Text style={styles.label}>Tên nhân viên:</Text>
+        <InputBox onChangeText={setEmployeeName} value={employeeName} />
+        <Text style={styles.label}>Tuổi nhân viên:</Text>
+        <InputBox onChangeText={setEmployeeAge} value={employeeAge} />
+        <Text style={styles.label}>Lương nhân viên:</Text>
+        <InputBox onChangeText={setEmployeeSalary} value={employeeSalary} />
+        <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+          <Text style={styles.buttonText}>Lưu</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+          <Text style={styles.buttonText}>Xóa</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
-function classDetailScreen({route}) {
-  const {id} = route.params;
-  const item = classData.find(item => item.id === id);
+// Add Employee Screen
+function addEmployee({navigation}) {
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [employeeName, setEmployeeName] = useState('');
+  const [employeeAge, setEmployeeAge] = useState('');
+  const [employeeSalary, setEmployeeSalary] = useState('');
+
+
+  useEffect(() => {
+    const fetchEmployee = async () => {
+      try {
+        const response = await fetch('http://blackntt.net:88/api/v1/employees');
+        if (!response.ok) {
+          throw new Error('Đã có lỗi');
+        }
+        const data = await response.json();
+        if (data.response === false) {
+          setEmployees([]);
+          throw new Error(data.message);
+        } else {
+          setEmployees(data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployee();
+  }, []); 
+
+  const addEmployee = async (addedData) => {
+    try {
+      const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addedData)
+      };
+
+      const response = await fetch(`http://blackntt.net:88/api/v1/create`, requestOptions);
+
+      if (!response.ok) {
+        throw new Error('Đã có lỗi khi thêm nhân viên');
+      }
+
+      const data = await response.json();
+      return data;
+
+    } catch (error) {
+      console.error('Lỗi:', error);
+    }
+  };
+
+  const handleAdd = async () => {
+    const addedData = {
+      employee_name: employeeName,
+      employee_age: employeeAge,
+      employee_salary: employeeSalary
+    }
+    const result = await addEmployee(addedData);
+    if (result) {
+      Alert.alert("Thành công", "Thêm nhân viên thành công!");
+      navigation.navigate('Danh sách Nhân viên');
+    } else {
+      Alert.alert("Lỗi", "Thêm thất bại, vui lòng thử lại!");
+    }
+  }
+
+  if (loading) {
+    return <Text style={styles.centerGroup}>Loading...</Text>;
+  }
+
   return (
     <SafeAreaView style={styles.detailContainer}>
-      <Text style={styles.title}>Chi tiết Lớp</Text>
+      <Text style={styles.title}>Thêm Nhân viên</Text>
       <StatusBar style="auto" />
       <View style={styles.centerGroup}>
-        <Text style={styles.label}>Lớp: {item.subjectName}</Text>
-        <Text style={styles.label}>Thời gian: {item.time}</Text>
-        <Text style={styles.label}>Mã môn học: {item.classId}</Text>
-        <Text style={styles.label}>Giảng viên: {item.lecturer}</Text>
-        <Text style={styles.label}>Phòng học: {item.classRoom}</Text>
+        <Image
+          source={{ uri: "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/00/00bddb041d6debb43f16b46332b77cab35b38da3_full.jpg" }}
+          style={{ width: 100, height: 100, borderRadius: 50, alignSelf: "center" }}
+        />
+        <Text style={styles.label}>Tên nhân viên:</Text>
+        <InputBox onChangeText={setEmployeeName} value={employeeName} />
+        <Text style={styles.label}>Tuổi nhân viên:</Text>
+        <InputBox onChangeText={setEmployeeAge} value={employeeAge} />
+        <Text style={styles.label}>Lương nhân viên:</Text>
+        <InputBox onChangeText={setEmployeeSalary} value={employeeSalary} />
+        <TouchableOpacity style={styles.button} onPress={handleAdd}>
+          <Text style={styles.buttonText}>Thêm</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -196,7 +505,7 @@ const styles = StyleSheet.create({
     elevation: 3, 
   },
   indexContainer: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: 'black',
     width: 30,
     height: 30,
     borderRadius: 15,
@@ -227,4 +536,16 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 5,
   },
+  centerBottomDockedGroup: {
+    position: 'absolute',
+    bottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  deleteButton: {
+    alignSelf: 'center', alignItems: 'center', marginTop: 10, width: '100%',  paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10, backgroundColor: 'red'
+  }
 });
