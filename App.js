@@ -108,7 +108,7 @@ function loginScreen({navigation}) {
 
   const handleLogin = () => {
     for (let i = 0; i < employees.length; i++) {
-      if(username === employees[i].id && password === authPassword){
+      if(username === employees[i].id){
         navigation.navigate('Danh sách Nhân viên', {username: username});
         return;
       }
