@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import Icon from "react-native-vector-icons/MaterialIcons"; // Importing an icon set
 import { getAllToDos } from '../database/dbService';
+import { getDatabaseConnection } from '../database/dbService';
 
 
 
@@ -43,15 +44,17 @@ export function HomeScreen({navigation}){
     //     }
     // };
     const loadToDoList = async () => {
-        const db = await getDatabaseConnection();
         try {
-            const jsonValue = await getAllToDos(db);
-            const data = jsonValue != null ? JSON.parse(jsonValue) : [];
-            setTodoList(data);
+          const db = await getDatabaseConnection();
+      
+          const data = await getAllToDos(db); // already a JS array of todos
+      
+          setTodoList(data); // no need for JSON.parse
         } catch (error) {
-            console.error('Failed to load to-do list', error);
+          console.error('❌ Failed to load to-do list', error);
+          setTodoList([]); // fallback
         }
-    }
+      };
 
 
     return(

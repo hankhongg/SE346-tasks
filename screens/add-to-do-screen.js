@@ -8,7 +8,7 @@ import { InputBox } from '../styles/input-box';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { getAllToDos, insertToDo } from '../database/dbService';
+import { getAllToDos, insertToDo, getDatabaseConnection } from '../database/dbService';
 
 
 export function AddToDoScreen({navigation}) {
@@ -41,18 +41,27 @@ export function AddToDoScreen({navigation}) {
   // };
 
   const handleUpdate = async () => {
-    const db = await getDatabaseConnection();
+    if (!title.trim() || !details.trim()) {
+      Alert.alert('Error', 'Please enter both title and details.');
+      return;
+    }
+
     try {
-      const newItem = {
-        id: Date.now(), 
-        title,
-        details,
-        isDone,
+      const db = await getDatabaseConnection();
+
+      const newToDo = {
+        title: title.trim(),
+        details: details.trim(),
+        isDone: false,
       };
-      await insertToDo(db, newItem);
-    } catch(e){
-      console.error("Error inserting to-do item", e);
-      Alert.alert('Error', 'Something went wrong while saving.');
+
+      await insertToDo(db, newToDo);
+
+      Alert.alert('Success', 'To-Do item added successfully!');
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('❌ Error adding To-Do:', error);
+      Alert.alert('Error', 'Failed to add To-Do.');
     }
   }
   

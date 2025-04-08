@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { InputBox } from '../styles/input-box';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { updatePasswordbyUsername } from '../database/dbService';
+import { updatePasswordbyUsername, getDatabaseConnection } from '../database/dbService';
 
 
 export function ForgotPasswordScreen({ navigation }) {
@@ -41,30 +41,33 @@ export function ForgotPasswordScreen({ navigation }) {
   // };
 
   const handleReset = async () => {
-    const db = await getDatabaseConnection();
-    if (username == authUsername){
+    if (username === authUsername) {
       try {
-        await updatePasswordbyUsername(db, username, newPassword); // Save new password
+        const db = await getDatabaseConnection();
+  
+        await updatePasswordbyUsername(db, username, newPassword);
+  
         setIsError(false);
+  
         Alert.alert(
-            'Password Reset',
-            `Hi ${username}, your password has been reset to: ${newPassword}`,
-            [
+          'Password Reset',
+          `Hi ${username}, your password has been reset to: ${newPassword}`,
+          [
             {
-                text: 'OK',
-                onPress: () => navigation.navigate('Login'), // or 'Home'
+              text: 'OK',
+              onPress: () => navigation.navigate('Login'),
             },
-            ]
-        )
-      } catch(e) {
-        console.error("Error resetting password", e);
+          ]
+        );
+      } catch (e) {
+        console.error('❌ Error resetting password:', e);
         Alert.alert('Error', 'Something went wrong while resetting the password.');
       }
     } else {
       setIsError(true);
       Alert.alert('Error', 'Username not found.');
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
