@@ -14,7 +14,7 @@ import { getAllToDos, insertToDo, getDatabaseConnection } from '../database/dbSe
 export function AddToDoScreen({navigation}) {
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
-  const [isDone, setIsDone] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
 
 
   // const handleUpdate = async () => {
@@ -52,7 +52,7 @@ export function AddToDoScreen({navigation}) {
       const newToDo = {
         title: title.trim(),
         details: details.trim(),
-        isDone: false,
+        isDone: isFinished,
       };
 
       await insertToDo(db, newToDo);
@@ -80,9 +80,9 @@ export function AddToDoScreen({navigation}) {
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
           <Text style={styles.label}>Completed:</Text>
           <Checkbox
-            value={isDone}
-            onValueChange={setIsDone}
-            color={isDone ? '#4630EB' : undefined}
+            value={isFinished}
+            onValueChange={setIsFinished}
+            color={isFinished ? '#4630EB' : undefined}
             style={{ marginLeft: 10 }}
           />
         </View>

@@ -26,7 +26,7 @@ export const createToDosTable = async (db) => {
   }
 };
 
-export const insertToDo = async (db, { title, details, isDone = 0 }) => {
+export const insertToDo = async (db, { title, details, isDone}) => {
   const query = `
     INSERT INTO TODOLIST (title, details, isDone)
     VALUES (?, ?, ?);
