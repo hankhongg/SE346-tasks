@@ -60,7 +60,6 @@ export function AddToDoScreen({navigation}) {
       Alert.alert('Success', 'To-Do item added successfully!');
       navigation.navigate('Home');
     } catch (error) {
-      console.error('❌ Error adding To-Do:', error);
       Alert.alert('Error', 'Failed to add To-Do.');
     }
   }

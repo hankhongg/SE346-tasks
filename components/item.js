@@ -5,18 +5,18 @@ import { useState } from 'react';
 import Checkbox from 'expo-checkbox';
 
 export const Item = ({ id, title, details, isDone, navigation, index }) => {
-    const [isCheck, setIsCheck] = useState(isDone);
+    const [isCheck, setIsCheck] = useState(Boolean(isDone));
     console.log('index', index);
     return(
       <TouchableOpacity onPress={() => navigation.navigate('DeleteToDo', { id: id, title: title, details: details, isDone: isCheck })}>
       <View style={styles.item}>
 
         <View style={styles.indexContainer}>
-          <Text style={styles.indexText}>{index}
+          <Text style={styles.indexText}>{String(index)}
           </Text>
         </View>
         <View style={styles.contentContainer}>
-          <Text style={styles.subject}>{title}
+          <Text style={styles.subject}>{String(title)}
           </Text>
         </View>
         <Checkbox

@@ -1,31 +1,11 @@
 import React from 'react';
 import { View, Text, Button, FlatList, TouchableOpacity } from 'react-native';
-import { useFonts } from 'expo-font';
 import { styles } from '../styles/styles';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Item } from '../components/item';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import Icon from "react-native-vector-icons/MaterialIcons"; // Importing an icon set
 import { getAllToDos } from '../database/dbService';
 import { getDatabaseConnection } from '../database/dbService';
-
-
-
-const data = [{
-    id: 1,
-    title: 'Title',
-    details: 'Details',
-    isDone: false,
-},
-{
-    id: 2,
-    title: 'Title2',
-    details: 'Details2',
-    isDone: false,
-},
-]
 
 export function HomeScreen({navigation}){
     const [todoList, setTodoList] = useState([]);
@@ -47,11 +27,11 @@ export function HomeScreen({navigation}){
         try {
           const db = await getDatabaseConnection();
       
-          const data = await getAllToDos(db); // already a JS array of todos
+          const data = await getAllToDos(db); 
       
-          setTodoList(data); // no need for JSON.parse
+          setTodoList(data);
         } catch (error) {
-          console.error('❌ Failed to load to-do list', error);
+          console.error('failed to load to-do list', error);
           setTodoList([]); // fallback
         }
       };
@@ -62,7 +42,8 @@ export function HomeScreen({navigation}){
             <Text style={styles.title}>To-Do List</Text>
             <FlatList
                 data={todoList}
-                renderItem={({item, index}) => (
+                renderItem={({item, index}) => {
+                    return (
                     <Item
                     id={item.id}
                     title={item.title}
@@ -71,7 +52,7 @@ export function HomeScreen({navigation}){
                     navigation={navigation}
                     index={index + 1}
                     />
-                )}
+                )}}
                 keyExtractor={item => item.id.toString()}
             />
 

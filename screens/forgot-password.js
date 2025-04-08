@@ -60,7 +60,6 @@ export function ForgotPasswordScreen({ navigation }) {
           ]
         );
       } catch (e) {
-        console.error('❌ Error resetting password:', e);
         Alert.alert('Error', 'Something went wrong while resetting the password.');
       }
     } else {

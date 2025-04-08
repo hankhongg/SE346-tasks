@@ -31,25 +31,19 @@ export function LoginScreen({navigation}) {
       console.log("Login button pressed");
     
       const db = await getDatabaseConnection();
-      console.log('📦 DB instance:', db);
-      console.log('authUsername:', authUsername);
-    
       try {
         const user = await findAccountByUsername(db, username);
     
         let storedPassword;
     
-        // If no user found, and it's the admin, create default admin account
         if (!user && username === authUsername) {
           storedPassword = authPassword;
           await insertAccount(db, authUsername, storedPassword);
-          console.log('✨ Default admin account inserted');
+          console.log('Default admin account inserted');
         } else if (user) {
           storedPassword = user.password;
         }
-    
-        console.log('🔐 Retrieved password:', storedPassword);
-    
+        
         if (username === authUsername && password === storedPassword) {
           setIsError(false);
           navigation.navigate('Home');
@@ -58,7 +52,7 @@ export function LoginScreen({navigation}) {
         }
     
       } catch (e) {
-        console.error("❌ Error during login:", e);
+        console.error("Error during login:", e);
         setIsError(true);
       }
     };

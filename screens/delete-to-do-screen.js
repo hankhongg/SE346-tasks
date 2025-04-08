@@ -32,7 +32,6 @@ export function DeleteToDoScreen({ route, navigation }) {
       Alert.alert('Success', 'To-Do item deleted successfully!');
       navigation.navigate('Home');
     } catch (e) {
-      console.error("❌ Error deleting to-do item", e);
       Alert.alert('Error', 'Something went wrong while deleting.');
     }
   };
