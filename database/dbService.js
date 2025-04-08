@@ -1,13 +1,10 @@
 import * as SQLite from 'expo-sqlite';
 
 export const getDatabaseConnection = async () => {
-  console.log('📦 Trying to open database...');
   try {
     const db = await SQLite.openDatabaseAsync('to-do-list-data.db');
-    console.log('✅ Database opened successfully');
     return db;
   } catch (error) {
-    console.error('❌ Failed to open database:', error);
     throw error;
   }
 };
