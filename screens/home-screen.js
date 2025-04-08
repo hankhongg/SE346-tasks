@@ -8,6 +8,8 @@ import { Item } from '../components/item';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import Icon from "react-native-vector-icons/MaterialIcons"; // Importing an icon set
+import { getAllToDos } from '../database/dbService';
+
 
 
 const data = [{
@@ -31,15 +33,26 @@ export function HomeScreen({navigation}){
         loadToDoList();
     }, []);
 
+    // const loadToDoList = async () => {
+    //     try {
+    //         const jsonValue = await AsyncStorage.getItem('todoList');
+    //         const data = jsonValue != null ? JSON.parse(jsonValue) : [];
+    //         setTodoList(data);
+    //     } catch (error) {
+    //         console.error('Failed to load to-do list', error);
+    //     }
+    // };
     const loadToDoList = async () => {
+        const db = await getDatabaseConnection();
         try {
-            const jsonValue = await AsyncStorage.getItem('todoList');
+            const jsonValue = await getAllToDos(db);
             const data = jsonValue != null ? JSON.parse(jsonValue) : [];
             setTodoList(data);
         } catch (error) {
             console.error('Failed to load to-do list', error);
         }
-    };
+    }
+
 
     return(
         <View style={styles.container}>

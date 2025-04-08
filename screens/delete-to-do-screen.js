@@ -5,24 +5,38 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { deleteToDo } from '../database/dbService';
+
 
 export function DeleteToDoScreen({ route, navigation }) {
   const { id, title , details , isDone} = route?.params || {};
 
+  // const handleDelete = async () => {
+  //   try {
+  //       const storedList = await AsyncStorage.getItem('todoList');
+  //       const list = storedList ? JSON.parse(storedList) : [];
+  //       const updatedList = list.filter(item => item.id !== id);
+  //       await AsyncStorage.setItem('todoList', JSON.stringify(updatedList));
+  //       Alert.alert('Success', 'To-Do item deleted successfully!');
+  //       navigation.navigate('Home');
+  //   }
+  //   catch (error) {
+  //       console.error('Error deleting to-do list:', error);
+  //       Alert.alert('Error', 'Something went wrong while deleting.');
+  //   }
+  // };
+
   const handleDelete = async () => {
+    const db = await getDatabaseConnection();
     try {
-        const storedList = await AsyncStorage.getItem('todoList');
-        const list = storedList ? JSON.parse(storedList) : [];
-        const updatedList = list.filter(item => item.id !== id);
-        await AsyncStorage.setItem('todoList', JSON.stringify(updatedList));
-        Alert.alert('Success', 'To-Do item deleted successfully!');
-        navigation.navigate('Home');
+      await deleteToDo(db, id);
+      Alert.alert('Success', 'To-Do item deleted successfully!');
+      navigation.navigate('Home');
+    } catch(e) {
+      console.error("Error deleting to-do item", e);
+      Alert.alert('Error', 'Something went wrong while deleting.');
     }
-    catch (error) {
-        console.error('Error deleting to-do list:', error);
-        Alert.alert('Error', 'Something went wrong while deleting.');
-    }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.detailContainer}>

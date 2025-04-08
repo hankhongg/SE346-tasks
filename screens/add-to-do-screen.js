@@ -8,6 +8,8 @@ import { InputBox } from '../styles/input-box';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
+import { getAllToDos, insertToDo } from '../database/dbService';
+
 
 export function AddToDoScreen({navigation}) {
   const [title, setTitle] = useState('');
@@ -15,28 +17,44 @@ export function AddToDoScreen({navigation}) {
   const [isDone, setIsDone] = useState(false);
 
 
-  const handleUpdate = async () => {
-    try {
-      const storedList = await AsyncStorage.getItem('todoList');
-      const list = storedList ? JSON.parse(storedList) : [];
+  // const handleUpdate = async () => {
+  //   try {
+  //     const storedList = await AsyncStorage.getItem('todoList');
+  //     const list = storedList ? JSON.parse(storedList) : [];
   
+  //     const newItem = {
+  //       id: Date.now(), 
+  //       title,
+  //       details,
+  //       isDone,
+  //     };
+  
+  //     const updatedList = [...list, newItem];
+  //     await AsyncStorage.setItem('todoList', JSON.stringify(updatedList));
+  
+  //     Alert.alert('Success', 'To-Do item saved successfully!');
+  //     navigation.navigate('Home');
+  //   } catch (error) {
+  //     console.error('Error updating to-do list:', error);
+  //     Alert.alert('Error', 'Something went wrong while saving.');
+  //   }
+  // };
+
+  const handleUpdate = async () => {
+    const db = await getDatabaseConnection();
+    try {
       const newItem = {
         id: Date.now(), 
         title,
         details,
         isDone,
       };
-  
-      const updatedList = [...list, newItem];
-      await AsyncStorage.setItem('todoList', JSON.stringify(updatedList));
-  
-      Alert.alert('Success', 'To-Do item saved successfully!');
-      navigation.navigate('Home');
-    } catch (error) {
-      console.error('Error updating to-do list:', error);
+      await insertToDo(db, newItem);
+    } catch(e){
+      console.error("Error inserting to-do item", e);
       Alert.alert('Error', 'Something went wrong while saving.');
     }
-  };
+  }
   
   
 

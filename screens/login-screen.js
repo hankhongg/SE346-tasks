@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import Checkbox from 'expo-checkbox';
 import { InputBox } from '../styles/input-box';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { findAccountByUsername, getDatabaseConnection, insertAccount } from '../database/dbService';
 
 export function LoginScreen({navigation}) {
     const [username, setUsername] = useState('');
@@ -14,17 +15,40 @@ export function LoginScreen({navigation}) {
     const [authPassword, setAuthPassword] = useState('123456');
     const authUsername = 'admin';
 
+    // const handleLogin = async () => {
+    //   const storedPassword = await AsyncStorage.getItem('password') || authPassword; // if no password is stored, use default
+    //     // check if the username and password match
+    //     if (username == authUsername && password == storedPassword) {
+    //         setIsError(false);
+    //         navigation.navigate('Home');
+    //     }
+    //     else {
+    //         setIsError(true);
+    //     }
+    // };
+    
     const handleLogin = async () => {
-      const storedPassword = await AsyncStorage.getItem('password') || authPassword; // if no password is stored, use default
-        // check if the username and password match
+      console.log("Login button pressed");
+      const db = await getDatabaseConnection();
+      console.log(db);
+      console.log('authUsername', authUsername);
+      try {
+        const storedPassword = await findAccountByUsername(db, username)?? authPassword; // if no password is stored, use default
+        await insertAccount(db, authUsername, storedPassword);
+        console.log(storedPassword);
         if (username == authUsername && password == storedPassword) {
-            setIsError(false);
-            navigation.navigate('Home');
+          setIsError(false);
+          navigation.navigate('Home');
         }
         else {
-            setIsError(true);
+          setIsError(true);
         }
-    };
+      } catch(e){
+        console.error("Error retrieving password", e);
+        setIsError(true);
+      }
+    }
+
 
     return (
       <SafeAreaView style={styles.container}>

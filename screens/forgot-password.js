@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { InputBox } from '../styles/input-box';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updatePasswordbyUsername } from '../database/dbService';
+
 
 export function ForgotPasswordScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -13,10 +15,36 @@ export function ForgotPasswordScreen({ navigation }) {
 
   const authUsername = 'admin';
 
+  // const handleReset = async () => {
+  //   if (username === authUsername) {
+  //     try {
+  //       await AsyncStorage.setItem('password', newPassword); // Save new password
+  //       setIsError(false);
+  //       Alert.alert(
+  //           'Password Reset',
+  //           `Hi ${username}, your password has been reset to: ${newPassword}`,
+  //           [
+  //           {
+  //               text: 'OK',
+  //               onPress: () => navigation.navigate('Login'), // or 'Home'
+  //           },
+  //           ]
+  //       );
+  //     } catch (error) {
+  //       console.error('Error resetting password:', error);
+  //       Alert.alert('Error', 'Something went wrong while resetting the password.');
+  //     }
+  //   } else {
+  //     setIsError(true);
+  //     Alert.alert('Error', 'Username not found.');
+  //   }
+  // };
+
   const handleReset = async () => {
-    if (username === authUsername) {
+    const db = await getDatabaseConnection();
+    if (username == authUsername){
       try {
-        await AsyncStorage.setItem('password', newPassword); // Save new password
+        await updatePasswordbyUsername(db, username, newPassword); // Save new password
         setIsError(false);
         Alert.alert(
             'Password Reset',
@@ -27,16 +55,16 @@ export function ForgotPasswordScreen({ navigation }) {
                 onPress: () => navigation.navigate('Login'), // or 'Home'
             },
             ]
-        );
-      } catch (error) {
-        console.error('Error resetting password:', error);
+        )
+      } catch(e) {
+        console.error("Error resetting password", e);
         Alert.alert('Error', 'Something went wrong while resetting the password.');
       }
     } else {
       setIsError(true);
       Alert.alert('Error', 'Username not found.');
     }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>
